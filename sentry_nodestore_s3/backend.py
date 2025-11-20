@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any, Mapping
 from datetime import datetime, timedelta
 
+import urllib3
 import boto3
 from botocore.config import Config
 
@@ -59,6 +60,7 @@ class S3PassthroughDjangoNodeStorage(DjangoNodeStorage, NodeStorage):
 
         if verify_ssl is False:
             client_args['verify'] = False
+            urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
         self.client = boto3.client(**client_args)
 
