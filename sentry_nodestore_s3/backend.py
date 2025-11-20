@@ -22,6 +22,7 @@ class S3PassthroughDjangoNodeStorage(DjangoNodeStorage, NodeStorage):
             write_through=False,
             read_through=False,
             compression=True,
+            verify_ssl=True,
             bucket_name=None,
             region_name=None,
             bucket_path=None,
@@ -41,19 +42,25 @@ class S3PassthroughDjangoNodeStorage(DjangoNodeStorage, NodeStorage):
 
         self.bucket_name = bucket_name
         self.bucket_path = bucket_path
-        self.client = boto3.client(
-            config=Config(
+
+        client_args = {
+            'config': Config(
                 retries={
                     'mode': 'standard',
                     'max_attempts': retry_attempts,
                 }
             ),
-            region_name=region_name,
-            service_name='s3',
-            endpoint_url=endpoint_url,
-            aws_access_key_id=aws_access_key_id,
-            aws_secret_access_key=aws_secret_access_key,
-        )
+            'region_name': region_name,
+            'service_name': 's3',
+            'endpoint_url': endpoint_url,
+            'aws_access_key_id': aws_access_key_id,
+            'aws_secret_access_key': aws_secret_access_key,
+        }
+
+        if verify_ssl is False:
+            client_args['verify'] = False
+
+        self.client = boto3.client(**client_args)
 
     def delete(self, id):
         if self.delete_through:
